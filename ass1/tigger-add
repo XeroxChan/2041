@@ -1,0 +1,31 @@
+#! /bin/dash
+
+#if .tigger does not exist
+if ! [ -d ".tigger" ]
+then
+    echo "$0: error: tigger repository directory .tigger not found"
+    exit 1
+fi
+
+#error checking for not existing file
+for filename in "$@"
+do  
+    #if not found in current directory or in index directory
+	if [ ! -f "$filename" ] && [ ! -f .tigger/index/"$filename" ] 
+	then
+		echo "$0: error: can not open '$filename'"
+		exit 1
+	fi
+done
+
+#adding to index
+for filename in "$@"
+do
+	if [ ! -f "$filename" ] && [ -f .tigger/index/"$filename" ]
+	then
+		rm .tigger/index/"$filename"
+		continue
+	fi
+	#copy file into index
+	cp "$filename" .tigger/index/
+done 

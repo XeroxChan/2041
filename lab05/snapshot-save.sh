@@ -1,0 +1,26 @@
+#!/bin/dash
+
+BACKNUM=0
+while [ -d ".snapshot.$BACKNUM" ]
+do
+    BACKNUM=$((BACKNUM+1))
+done
+
+mkdir ".snapshot.$BACKNUM"
+
+for file in *
+do
+    if echo "$file" | grep -Eq "^\."
+    then
+        :
+        
+    elif [ "$file" = "snapshot-save.sh" ] || [ "$file" = "snapshot-load.sh" ]
+    then
+        :
+        
+    else
+        cp "$file" ".snapshot.$BACKNUM"
+    fi
+done
+
+echo "Creating snapshot $BACKNUM"

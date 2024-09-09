@@ -1,0 +1,5 @@
+#!/bin/dash
+
+courseName=$1
+
+curl -s -L http://www.timetable.unsw.edu.au/2022/${courseName}KENS.html | grep -Eo ${courseName}[0-9]{4}.*[a-zA-Z]* | rev | cut -c10- | rev | grep -E [^0-9]{4}$ | sed 's/.html">/ /' | sort | uniq

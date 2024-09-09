@@ -1,0 +1,8 @@
+#! /bin/dash
+
+if ! [ -d ".tigger" ]
+then
+    mkdir .tigger
+else
+    echo "./tigger-init: error: .tigger already exists"
+fi

@@ -1,0 +1,15 @@
+#! /usr/bin/env python3
+
+import sys
+import csv
+import re
+
+data = csv.reader(sys.stdin, delimiter='|')
+out = csv.writer(sys.stdout, delimiter='|')
+
+total = 0
+
+for course, stuid, name, progam, gender in csv.reader(sys.stdin, delimiter='|'):
+    name = re.fullmatch(r"(.*), (.*)\s*", name)
+    name = name.group(2) + " " + name.group(1) 
+    out.writerow([course, stuid, name, progam, gender])

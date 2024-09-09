@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+
+import sys
+import re
+
+with open(sys.argv[1]) as files:
+    lines = files.read().replace('\n', '')
+    a = re.findall('\d+', lines)
+    
+    for i in range(0, len(a)):
+        a[i] = int(a[i])
+    
+    print(sum(a))

@@ -1,0 +1,55 @@
+#!/bin/dash
+
+commits=$1
+
+#if .tigger does not exist
+if ! [ -d ".tigger" ]
+then
+    echo "$0: error: tigger repository directory .tigger not found"
+    exit 1
+fi
+
+#if number of argument incorrect
+if [ $# -ne 1 ]
+then
+	echo "usage: tigger-show <commit>:<filename>"
+	exit 1 
+fi
+
+#get field one
+commitOrd=$(echo "$commits" | cut -d':' -f1)
+
+#get field two
+filename=$(echo "$commits" | cut -d':' -f2)
+
+#if commit order not found in commits dir
+if [ ! -d .tigger/commits/"$commitOrd" ]
+then
+	echo "$0: error: unknown commit '$commitOrd'"
+	exit 1
+fi
+
+#if commitOrd is an empty string
+#then the contents of the file in the index should be printed
+if [ "$commitOrd" = "" ] 
+then
+    #if file not found in index
+	if [ ! -f .tigger/index/"$filename" ]
+	then
+		echo "$0: error: '$filename' not found in index"
+		exit 1
+	
+    else	
+        cat .tigger/index/"$filename"
+	exit 0
+	fi
+fi
+
+#if file not found in commits 
+if [ ! -f .tigger/commits/"$commitOrd"/"$filename" ] 
+then 
+	echo "$0: error: '$filename' not found in commit $commitOrd"
+	exit 1
+fi
+
+cat .tigger/commits/"$commitOrd"/"$filename"

@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+
+import re
+import sys
+
+lines = sys.stdin.read()
+#nums = re.findall('[-+]?[.]?[\d]+(?:,\d\d\d)*[\.]?\d*(?:[eE][-+]?\d+)?', lines, re.M)
+    
+#for j in range(0, len(nums)):
+#    nums[j] = round(float(nums[j]))
+
+    
+
+print(re.sub('[-+]?[.]?[\d]+(?:,\d\d\d)*[\.]?\d*(?:[eE][-+]?\d+)?', lambda x: str(round(float(x.group(0)))), lines), end="")
+    

@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+
+import sys
+import re
+import csv
+try:
+    with open(sys.argv[1], 'r') as fileName:
+        allLines = fileName.readlines()
+        fileLines = len(allLines)
+        if fileLines <= 0:
+            sys.exit()
+
+        mid = fileLines/2
+        mid = int(mid)
+
+    if fileLines % 2 == 0:
+        print(allLines[mid - 1], end="")
+        print(allLines[mid], end="")
+    else:
+        print(allLines[mid], end="")
+except IOError:
+    sys.exit()

@@ -1,0 +1,86 @@
+#!/bin/dash
+
+#if .tigger does not exist
+if ! [ -d ".tigger" ]
+then
+    echo "$0: error: tigger repository directory .tigger not found"
+    exit 1
+fi
+
+#wrong flag error
+#buildin tool to get the flags
+while getopts 'am' flag; do
+    case "${flag}" in
+    a)
+        #todo in subset 1
+        ;;
+    m)
+        #do nothing
+        ;;
+    # wrong flag
+    ?)
+        echo "Usage: $0 -m 'message'"
+        exit 1
+       ;;
+    esac
+done
+
+#variable to indicate if any file has been modified
+#print nothing to commmit if nothing has been modified
+modify=0
+
+#copy all files in index to local
+                #list all files to be commited
+for filename in $(ls .tigger/index)
+do  
+    #if there exist a file in local
+    if [ -f ".tigger/local/${filename}" ]
+    then
+        #compare difference from index and from local
+        if cmp -s ".tigger/index/$filename" ".tigger/local/$filename"
+        #if no difference
+        then
+            continue
+        else
+            modify=1
+        fi
+        rm ".tigger/local/${filename}"
+    else
+        modify=1
+    fi
+    #copy from index to local
+    cp ".tigger/index/$filename" ".tigger/local/$filename"
+done
+
+#nothing is modified therefore nothing to commit
+if [ $modify -eq 0 ]
+then
+	echo "nothing to commit"
+	exit 1
+fi
+
+#set commitOrd as the number of directories
+#i.e if there are 0 directories, the order of this commit is 0
+commitOrd=$(ls -l .tigger/commits | grep -c ^d)
+
+#create a directory for the sequence
+mkdir .tigger/commits/"$commitOrd"
+
+#get the commit message
+if [ "$#" = 2 ]
+then
+    commitMsg=$2
+elif [ "$# = 3" ]
+then
+    commitMsg=$3
+fi
+
+#put the commit message into the corresponding directory
+echo "$commitMsg" > ".tigger/commits/$commitOrd/msg"
+
+echo "Committed as commit $commitOrd"
+
+if [ "$(find .tigger/index | wc -l)" -ne 0 ]
+then
+	cp .tigger/index/* .tigger/commits/"$commitOrd"/
+fi

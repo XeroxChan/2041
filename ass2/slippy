@@ -1,0 +1,255 @@
+#! /usr/bin/env python3
+import sys
+import re
+
+
+#==================================================
+#Functions
+#==================================================
+
+#==================================================
+#function to compile the passed regular expression
+#==================================================
+def regex_compile(list_index):
+    regex_pattern = split_command[list_index]
+    compiled_pattern = re.compile(regex_pattern)
+    return compiled_pattern
+
+#==================================================
+#function for simple 'q'
+#==================================================
+def simple_quit(split_command):
+    ##get the number
+    quit_length = split_command[0].strip('q')
+    quit_length = int(quit_length)
+    i = 0
+    for line in sys.stdin:
+        if i < quit_length:
+            print(line, end='')
+        else:
+            break
+        i+=1
+
+#==================================================
+#function for simple 'p'
+#==================================================
+def simple_print(split_command):
+    if split_command[0] == 'p':
+        for line in sys.stdin:
+            print(line, end='')
+            print(line, end='')
+    print_target = split_command[0].strip('p')
+    if print_target != '':
+        print_target = int(print_target)
+    #check for -n
+    if len(sys.argv) == 2: #no -n
+        i = 1
+        for line in sys.stdin:
+            print(line, end='')
+            if i == print_target:
+                print(line, end='')
+            i+=1
+    elif sys.argv[1] == '-n': #-n
+        i = 1
+        for line in sys.stdin:
+            if i == print_target:
+                print(line, end='')
+            i += 1
+
+#==================================================
+#function for simple 'd'
+#==================================================
+def simple_delete(split_command):
+    if split_command[0] == 'd':
+        sys.exit()
+    delete_target = split_command[0].strip('d')
+    if delete_target != '':
+        delete_target = int(delete_target)
+    
+    if len(sys.argv) == 2: #no -n
+        i = 1
+        for line in sys.stdin:
+            if i == delete_target:
+                i += 1
+                continue
+            else:
+                print(line, end='')
+                i += 1
+    #print nothing
+    elif sys.argv[1] == '-n': #-n
+        pass
+
+#==================================================
+#function for regex 'q'
+#==================================================
+def regex_quit():
+    for line in sys.stdin:
+        if compiled_pattern.search(line):
+            print(line, end='')
+            break
+        else:
+            print(line, end='')
+
+#==================================================
+#function for regex 'p'
+#==================================================
+def regex_print():
+    #check for -n
+    if re.search('-n', str(sys.argv[0:])): #-n
+        for line in sys.stdin:
+            if compiled_pattern.search(line):
+                print(line, end='')
+    else: #no -n
+        for line in sys.stdin:
+            print(line, end='')
+            if compiled_pattern.search(line):
+                print(line, end='')
+
+#==================================================
+#function for regex 'd'
+#==================================================
+def regex_delete():
+    for line in sys.stdin:
+        if compiled_pattern.search(line):
+            continue
+        else:
+            print(line, end='')
+#==================================================
+#function for 's'
+#==================================================
+def substitute(g_option, split_command, compiled_pattern):
+    if g_option:
+        if re.search(r'[s]', split_command[0]):
+            #get the number address
+            sub_target = split_command[0].strip('s')
+            #if the number address is not empty
+            if sub_target != '':
+                sub_target = int(sub_target)
+                i = 1
+                for line in sys.stdin:
+                    #found the matching regex
+                    if compiled_pattern.search(line) and i == sub_target:
+                        #substitute
+                        result = re.sub(compiled_pattern, split_command[2], line)
+                        print(result, end='')
+                    else:
+                        print(line, end='')
+                    i += 1
+            #no specified location to sub
+            elif sub_target == '':
+                for line in sys.stdin:
+                    #found the matching regex
+                    if compiled_pattern.search(line):
+                        #substitute
+                        result = re.sub(compiled_pattern, split_command[2], line)
+                        print(result, end='')
+                    else:
+                        print(line, end='')
+    else:
+        if re.search(r'[s]', split_command[0]):
+            #get the number address
+            sub_target = split_command[0].strip('s')
+            #if the number address is not empty
+            if sub_target != '':
+                sub_target = int(sub_target)
+                i = 1
+                for line in sys.stdin:
+                    #found the matching regex
+                    if compiled_pattern.search(line) and i == sub_target:
+                        #substitute
+                        result = re.sub(compiled_pattern, split_command[2], line, 1)
+                        print(result, end='')
+                        
+                    else:
+                        print(line, end='')
+                    i += 1
+                #no specified location to sub
+            elif sub_target == '':
+                for line in sys.stdin:
+                #found the matching regex
+                    if compiled_pattern.search(line):
+                        #substitute only once
+                        result = re.sub(compiled_pattern, split_command[2], line, 1)
+                        print(result, end='')
+                    else:
+                        print(line, end='')
+
+#==============================================================================                        
+#end of function declarations
+#==============================================================================
+
+
+
+#-f option
+if re.search('-f', str(sys.argv[0:])):
+    command_file = open(sys.argv[2], "r")
+    command = command_file.read().strip('\n')
+else:
+    command = sys.argv[-1]
+
+#split the command with the character behind 's'
+if command[0] == 's':
+    split_command = command.split(command[1])
+else:
+    #split the command with '/' as the delimeter for non-substitute commands
+    split_command = command.split('/')
+
+#use length of the split_command to determine where is the regex_pattern
+command_length = len(split_command)
+
+#q/p/d
+#example slippy '3q'
+if command_length == 1:
+    #quit
+    if re.search(r'[q]', split_command[0]):
+        simple_quit(split_command)
+    #print
+    elif re.search(r'[p]', split_command[0]):
+        simple_print(split_command)
+    #delete
+    elif re.search(r'[d]', split_command[0]):
+        simple_delete(split_command)
+
+#q/p/d
+elif command_length == 3:
+    #compile regex pattern
+    compiled_pattern = regex_compile(1)
+    
+    #quit
+    if re.search(r'[q]', split_command[2]):
+        regex_quit()
+                
+    #print
+    elif re.search(r'[p]', split_command[2]):
+        regex_print()
+                    
+    #delete
+    elif re.search(r'[d]', split_command[2]):
+        regex_delete()
+
+#s
+elif command_length == 4:
+    compiled_pattern = regex_compile(1)
+    
+    #have g
+    if re.search(r'[g]', split_command[3]):
+        substitute(True, split_command, compiled_pattern)
+
+    #no g
+    elif not re.search(r'[g]', split_command[3]):
+        substitute(False, split_command, compiled_pattern)
+
+#regex address to substitute
+elif command_length == 6:
+    address = regex_compile(1)
+    compiled_pattern = regex_compile(3)
+    for line in sys.stdin:
+        #found the address
+        if address.search(line):
+            #found the matching regex
+            if compiled_pattern.search(line):
+                result = re.sub(compiled_pattern, split_command[4], line)
+                print(result, end= '')
+        #not the address
+        else:
+            print(line, end='')

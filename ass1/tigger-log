@@ -1,0 +1,24 @@
+#!/bin/dash
+
+#if .tigger does not exist
+if ! [ -d ".tigger" ]
+then
+    echo "$0: error: tigger repository directory .tigger not found"
+    exit 1
+fi
+
+#if the commit directory is empty
+if [ "$(ls .tigger/commits/ | wc -l)" -eq 0 ]
+then
+	echo "$0: error: your repository does not have any commits yet"
+	exit 1
+fi
+
+#get commits in reverse order i.e from new to old
+commitRecords=$(ls .tigger/commits/ | sort -r)
+
+#print all commits
+for commits in $commitRecords
+do
+	echo "$commits" "$(cat .tigger/commits/"$commits"/msg)"
+done
